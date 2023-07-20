@@ -1,36 +1,47 @@
-class Grid {
-  constructor(element) {
-    this.element = element;
-    this.images = Array.from(element.querySelectorAll(".image"));
-    this.init();
-  }
 
-  init() {
-    this.images.forEach(image => {
-      image.addEventListener("dragstart", this.onDragStart);
-      image.addEventListener("drop", this.onDrop);
-    });
-  }
+let dragindex = 0;
+let dropindex = 0;
+let clone = "";
 
-  onDragStart(event) {
-    event.preventDefault();
-    this.draggedImage = event.target;
-    this.draggedImage.classList.add("dragged");
-    this.draggedImage.style.cursor = "move";
-  }
+const images = document.querySelectorAll(".image");
 
-  onDrop(event) {
-    event.preventDefault();
-    this.draggedImage.classList.remove("dragged");
-    this.draggedImage.style.cursor = "default";
-
-    const target = event.target;
-    const index = this.images.indexOf(target);
-    const draggedIndex = this.images.indexOf(this.draggedImage);
-
-    this.images.splice(index, 1);
-    this.images.splice(draggedIndex, 0, this.draggedImage);
-  }
+function drag(e) {
+  e.dataTransfer.setData("text", e.target.id);
 }
 
-const grid = new Grid(document.querySelector(".grid"));
+function allowDrop(e) {
+  e.preventDefault();
+}
+
+function drop(e) {
+  clone = e.target.cloneNode(true);
+  let data = e.dataTransfer.getData("text");
+  let nodelist = document.getElementById("parent").childNodes;
+  console.log(data, e.target.id);
+  for (let i = 0; i < nodelist.length; i++) {
+    if (nodelist[i].id == data) {
+      dragindex = i;
+    }
+  }
+
+  dragdrop(clone);
+
+  document
+    .getElementById("parent")
+    .replaceChild(document.getElementById(data), e.target);
+
+  document
+    .getElementById("parent")
+    .insertBefore(
+      clone,
+      document.getElementById("parent").childNodes[dragindex]
+    );
+}
+
+const dragdrop = (image) => {
+  image.ondragstart = drag;
+  image.ondragover = allowDrop;
+  image.ondrop = drop;
+};
+
+images.forEach(dragdrop);
